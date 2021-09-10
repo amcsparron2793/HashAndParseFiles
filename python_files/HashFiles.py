@@ -6,6 +6,7 @@ Hashes a given file tree
 
 # imports
 import hashlib
+import json
 import os
 from os import chdir, getcwd, mkdir, walk, listdir
 from os.path import join, isdir, isfile
@@ -33,21 +34,31 @@ class HashDirectory:
             #for d in dirpath:
             for file in files:
                 # print(file)
-                # TODO: create JSON with file name and hash
+                # TODO: fix this so its cleaner and organized by subdir
                 try:
-                    with open(join(self.test_walk_dir, file.split('.')[0], file).replace('\\', '/'), "rb") as f:
+                    with open(join(self.test_walk_dir,
+                                   file.split('.')[0],
+                                   file).replace('\\', '/'), "rb") as f:
                         #print(f.name)
                         self.hasher = hashlib.sha256(f.read())
                     self.out_hash = self.hasher.hexdigest()
 
+                    # FIXME: this is never false since self.hashlist isn't the actual values in the dict,
+                    #  but adding an index throws an index error
                     if self.out_hash not in self.hashlist:
-                        self.hashlist.append(self.out_hash)
+                        self.hashlist.append({file: self.out_hash})
                     else:
-                        self.dupelist.append(self.out_hash)
+                        self.dupelist.append({file: self.out_hash})
                 except Exception as e:
-                    stderr.write(str(e))
+                    stderr.write(str(e) + "\n")
         print("{} unique hashes found".format(len(self.hashlist)))
         print("{} duplicates found".format(len(self.dupelist)))
+
+        with open("../Misc_Project_Files/hashlist.json", "w") as f:
+            json.dump(self.hashlist, f, indent=4)
+
+        with open("../Misc_Project_Files/dupelist.json", "w") as f:
+            json.dump(self.dupelist, f, indent=4)
         # print(self.hashlist)
 
 
@@ -77,6 +88,6 @@ def MakeTestFiles():
 
 
 # FIXME: MakeTestFiles makes HashDirectory() fail silently
-#MakeTestFiles()
+# MakeTestFiles()
 hd = HashDirectory()
 hd.WalkAndHash()
