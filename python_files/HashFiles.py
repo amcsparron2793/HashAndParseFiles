@@ -31,27 +31,53 @@ class HashDirectory:
 
     def WalkAndHash(self):
         for dirpath, subdir, files in os.walk(self.test_walk_dir):
-            #for d in dirpath:
+            # for d in dirpath:
             for file in files:
                 # print(file)
                 # TODO: fix this so its cleaner and organized by subdir
                 try:
                     with open(join(self.test_walk_dir,
+                                   # FIXME: the subdir might be causing the
+                                   #  duplicates to slip through into hashlist,
+                                   #  ie the folder is changed every time the file changes,
+                                   #  so only 98 dupes are ever found?
                                    file.split('.')[0],
                                    file).replace('\\', '/'), "rb") as f:
-                        #print(f.name)
+                        # FIXME: since the contents of each file is different, shouldn't each hash be different?
                         self.hasher = hashlib.sha256(f.read())
                     self.out_hash = self.hasher.hexdigest()
 
-                    # FIXME: this is never false since self.hashlist isn't the actual values in the dict,
-                    #  but adding an index throws an index error
-                    if self.out_hash not in self.hashlist:
-                        self.hashlist.append({file: self.out_hash})
-                    else:
-                        self.dupelist.append({file: self.out_hash})
+                    try:
+                        if len(self.hashlist) > 0:
+                            # FIXME: for x in range(len(self.hashlist)) overloads the RAM,
+                            #  so there must be a better way to iterate through the dicts in the list.
+                            # for x in range(len(self.hashlist)):
+                            if self.out_hash not in self.hashlist[0].values():
+                                # print(self.hashlist[x].values())
+                                self.hashlist.append({file: self.out_hash})
+                            else:
+                                self.dupelist.append({file: self.out_hash})
+                        elif len(self.hashlist) <= 0:
+                            self.hashlist.append({file: self.out_hash})
+                        else:
+                            print("else")
+                    except IndexError:
+                        print("index error")
+                        if self.out_hash not in self.hashlist:
+                            self.hashlist.append({file: self.out_hash})
+                        else:
+                            self.dupelist.append({file: self.out_hash})
                 except Exception as e:
                     stderr.write(str(e) + "\n")
         print("{} unique hashes found".format(len(self.hashlist)))
+        test_list = []
+        for x in self.hashlist:
+            for k in x.keys():
+                if k == "92.txt":
+                    test_list.append(x[k])
+                    # TODO: there are 99 matching hashes,
+                    #  so the hash might correspond to the filename?
+
         print("{} duplicates found".format(len(self.dupelist)))
 
         with open("../Misc_Project_Files/hashlist.json", "w") as f:
@@ -83,7 +109,7 @@ def MakeTestFiles():
             if not isfile(name + ".txt"):
                 with open((name + ".txt"), "w") as f:
                     f.write(dirs + str(rint) + name)
-                #print(getcwd())
+                # print(getcwd())
         chdir('../')
 
 
