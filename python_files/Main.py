@@ -43,6 +43,8 @@ elif 'CustomLog_Classes' in modules:
 elif 'dependencies.CustomLog_Classes' not in modules:
     print("CustomLog_Classes not in modules!!")
 
+import HashFiles
+
 doc_check_token_path = "../Misc_Project_Files/no_doc_check"
 
 py_ver_float = float(str(version_info.major) + '.' + str(version_info.minor))
@@ -52,7 +54,8 @@ py_ver_float = float(str(version_info.major) + '.' + str(version_info.minor))
 def main_func(dev=False):
     """ Main Program function. """
     if not dev:
-        print("Placeholder text")
+        Hasher = HashFiles.HashDirectory()
+        Hasher.HashDir()
     elif dev:
         if version_info.major == 3:
             print("checking for docstrings now...")

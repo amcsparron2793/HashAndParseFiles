@@ -1,119 +1,54 @@
 """
 HashFiles.py
 
-Hashes a given file tree
+Hashes a given file tree one file at a time.
 """
 
-# imports
 import hashlib
 import json
-import os
-from os import chdir, getcwd, mkdir, walk, listdir
-from os.path import join, isdir, isfile
-from dependencies import CustomLog_Classes as Clog
-from sys import stderr
-from random import randint
+from os import walk
+from os.path import join
+
+""" THIS WORKS PERFECTLY AS IS. """
 
 
-# noinspection PyAttributeOutsideInit
 class HashDirectory:
-    def __init__(self):
-        try:
-            self.err = Clog.Error()
-            self.err.error_setup()
+    def __init__(self, BUFF_SIZE=65536):
+        # BUF_SIZE is totally arbitrary, change for your app!
+        # BUF_SIZE allows large files to be read in smaller chunks,
+        # that way a 2GB file doesn't take 2GB of memory
+        self.BUFF_SIZE = BUFF_SIZE  # default is lets read stuff in 64kb chunks!
 
-            self.hashlist = []
-            self.dupelist = []
-            self.test_walk_dir = "../Misc_Project_Files/test_files"
+        # TODO: choose option for algorithm
+        self.md5 = hashlib.md5()
+        self.sha1 = hashlib.sha1()
+        self.sha256 = hashlib.sha256()
 
-        except TypeError as e:
-            self.err.error_handle(e)
-
-    def WalkAndHash(self):
-        for dirpath, subdir, files in os.walk(self.test_walk_dir):
-            # for d in dirpath:
+    def HashDir(self, folder_to_hash="../Misc_Project_Files/test_files"):
+        HashDict = []
+        file_counter = 0
+        for dirpath, subdirs, files in walk(folder_to_hash):
             for file in files:
-                # print(file)
-                # TODO: fix this so its cleaner and organized by subdir
-                try:
-                    with open(join(self.test_walk_dir,
-                                   # FIXME: the subdir might be causing the
-                                   #  duplicates to slip through into hashlist,
-                                   #  ie the folder is changed every time the file changes,
-                                   #  so only 98 dupes are ever found?
-                                   file.split('.')[0],
-                                   file).replace('\\', '/'), "rb") as f:
-                        # FIXME: since the contents of each file is different, shouldn't each hash be different?
-                        self.hasher = hashlib.sha256(f.read())
-                    self.out_hash = self.hasher.hexdigest()
-
-                    try:
-                        if len(self.hashlist) > 0:
-                            # FIXME: for x in range(len(self.hashlist)) overloads the RAM,
-                            #  so there must be a better way to iterate through the dicts in the list.
-                            # for x in range(len(self.hashlist)):
-                            if self.out_hash not in self.hashlist[0].values():
-                                # print(self.hashlist[x].values())
-                                self.hashlist.append({file: self.out_hash})
-                            else:
-                                self.dupelist.append({file: self.out_hash})
-                        elif len(self.hashlist) <= 0:
-                            self.hashlist.append({file: self.out_hash})
-                        else:
-                            print("else")
-                    except IndexError:
-                        print("index error")
-                        if self.out_hash not in self.hashlist:
-                            self.hashlist.append({file: self.out_hash})
-                        else:
-                            self.dupelist.append({file: self.out_hash})
-                except Exception as e:
-                    stderr.write(str(e) + "\n")
-        print("{} unique hashes found".format(len(self.hashlist)))
-        test_list = []
-        for x in self.hashlist:
-            for k in x.keys():
-                if k == "92.txt":
-                    test_list.append(x[k])
-                    # TODO: there are 99 matching hashes,
-                    #  so the hash might correspond to the filename?
-
-        print("{} duplicates found".format(len(self.dupelist)))
-
-        with open("../Misc_Project_Files/hashlist.json", "w") as f:
-            json.dump(self.hashlist, f, indent=4)
-
-        with open("../Misc_Project_Files/dupelist.json", "w") as f:
-            json.dump(self.dupelist, f, indent=4)
-        # print(self.hashlist)
-
-
-def MakeTestFiles():
-    test_file_dir = "../Misc_Project_Files/test_files"
-    namelist = [str(x) for x in range(1, 100)]
-
-    if isdir(test_file_dir):
-        chdir(test_file_dir)
-    elif not isdir(test_file_dir):
-        mkdir(test_file_dir)
-        chdir(test_file_dir)
-
-    for name in namelist:
-        if not isdir(name):
-            mkdir(name)
-
-    for dirs in listdir(getcwd()):
-        chdir(dirs)
-        for name in namelist:
-            rint = randint(1, 1000)
-            if not isfile(name + ".txt"):
-                with open((name + ".txt"), "w") as f:
-                    f.write(dirs + str(rint) + name)
-                # print(getcwd())
-        chdir('../')
-
-
-# FIXME: MakeTestFiles makes HashDirectory() fail silently
-# MakeTestFiles()
-hd = HashDirectory()
-hd.WalkAndHash()
+                with open(join(dirpath, file).replace('\\', '/'), 'rb') as f:
+                    while True:
+                        data = f.read(self.BUFF_SIZE)
+                        if not data:
+                            break
+                        self.md5.update(data)
+                        self.sha1.update(data)
+                        self.sha256.update(data)
+                        # print(os.path.join(dirpath, file))
+                #print("\nfilename is: {}".format(join(dirpath, file)))
+                file_counter += 1
+                #print("MD5: {0}".format(self.md5.hexdigest()))
+                #print("SHA1: {0}".format(self.sha1.hexdigest()))
+                HashDict.append({"filename": join(dirpath, file).replace('\\', '/'),
+                                 "MD5": self.md5.hexdigest(),
+                                 "Sha1": self.sha1.hexdigest(),
+                                 "Sha256": self.sha256.hexdigest()})
+        with open("../Misc_Project_Files/HashDir_{}.json".format(
+                folder_to_hash.split("/")[-1]), "w") as f:
+            json.dump(HashDict, fp=f, indent=4)
+        # print(json.dumps(HashDict, indent=4))
+        print("\n{} total files hashed".format(file_counter))
+        print("json dumped to {}".format(f.name))
