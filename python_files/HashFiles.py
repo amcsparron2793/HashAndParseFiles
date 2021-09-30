@@ -9,8 +9,6 @@ import json
 from os import walk
 from os.path import join
 
-""" THIS WORKS PERFECTLY AS IS. """
-
 
 class HashDirectory:
     def __init__(self, BUFF_SIZE=65536):
@@ -52,3 +50,5 @@ class HashDirectory:
         # print(json.dumps(HashDict, indent=4))
         print("\n{} total files hashed".format(file_counter))
         print("json dumped to {}".format(f.name))
+
+# TODO: add compare hashes method
