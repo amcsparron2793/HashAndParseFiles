@@ -54,8 +54,8 @@ py_ver_float = float(str(version_info.major) + '.' + str(version_info.minor))
 def main_func(dev=False):
     """ Main Program function. """
     if not dev:
-        Hasher = HashFiles.HashDirectory()
-        Hasher.HashDir()
+        hasher = HashFiles.HashDirectory()
+        hasher.HashDir()
     elif dev:
         if version_info.major == 3:
             print("checking for docstrings now...")
