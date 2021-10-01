@@ -47,7 +47,7 @@ class HashDirectory:
             except Exception as e:
                 self.err.error_handle(e)
 
-    def HashFile(self, dirpath, file):
+    def HashFile(self, dirpath, file, Mode="D"):
         with open(join(dirpath, file).replace('\\', '/'), 'rb') as f:
             while True:
                 data = f.read(self.BUFF_SIZE)
@@ -56,6 +56,24 @@ class HashDirectory:
                 self.md5.update(data)
                 self.sha1.update(data)
                 self.sha256.update(data)
+        if Mode.upper() == "F":
+            HashDict = [{"filename": join(dirpath, file).replace('\\', '/'),
+                         "MD5": self.md5.hexdigest(),
+                         "Sha1": self.sha1.hexdigest(),
+                         "Sha256": self.sha256.hexdigest()}]
+
+            with open("../Misc_Project_Files/HashFile_{}.json".format(
+                    HashDict[0]["filename"].split(".")[0]), "w") as f:
+                json.dump(HashDict, fp=f, indent=4)
+                print("json dumped to {}".format(f.name))
+
+        elif Mode.upper() == "D":
+            pass
+        else:
+            try:
+                raise AttributeError("Mode can only be D or F")
+            except AttributeError as e:
+                self.err.error_handle(e)
 
     def HashDir(self, folder_to_hash="../Misc_Project_Files/test_files"):
         HashDict = []
@@ -63,7 +81,6 @@ class HashDirectory:
         for dirpath, subdirs, files in walk(folder_to_hash):
             for file in files:
                 self.HashFile(dirpath, file)
-
                 file_counter += 1
                 # print("MD5: {0}".format(self.md5.hexdigest()))
                 # print("SHA1: {0}".format(self.sha1.hexdigest()))
@@ -79,4 +96,4 @@ class HashDirectory:
         print("json dumped to {}".format(f.name))
 
 # TODO: add compare hashes method
-# TODO: add hashfile
+
