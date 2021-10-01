@@ -55,6 +55,8 @@ def main_func(dev=False):
     """ Main Program function. """
     if not dev:
         hasher = HashFiles.HashDirectory()
+        # hasher.HashFile(dirpath=r"C:\Users\amcsp\Desktop\PythonProjects\HashAndParseFiles\logs\err_logs",
+                        # file="error_log_09-06-21.log", Mode="F")
         hasher.HashDir()
     elif dev:
         if version_info.major == 3:

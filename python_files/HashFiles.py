@@ -37,7 +37,7 @@ class HashDirectory:
                                                default="65536").ask()
                 if str(buffer_size).isdigit():
                     print("{} byte buffer size chosen".format(buffer_size))
-                    return buffer_size
+                    return int(buffer_size)
                 else:
                     print("buffer size must be an integer")
 
@@ -63,7 +63,7 @@ class HashDirectory:
                          "Sha256": self.sha256.hexdigest()}]
 
             with open("../Misc_Project_Files/HashFile_{}.json".format(
-                    HashDict[0]["filename"].split(".")[0]), "w") as f:
+                    str(HashDict[0]["filename"].split("/")[-1]).split(".")[0]), "w") as f:
                 json.dump(HashDict, fp=f, indent=4)
                 print("json dumped to {}".format(f.name))
 
