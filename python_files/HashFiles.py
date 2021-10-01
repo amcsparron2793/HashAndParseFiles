@@ -47,7 +47,7 @@ class HashDirectory:
             except Exception as e:
                 self.err.error_handle(e)
 
-    def HashFile(self, dirpath, file, Mode="D"):
+    def HashFile(self, dirpath, file, Mode):
         with open(join(dirpath, file).replace('\\', '/'), 'rb') as f:
             while True:
                 data = f.read(self.BUFF_SIZE)
@@ -80,7 +80,7 @@ class HashDirectory:
         file_counter = 0
         for dirpath, subdirs, files in walk(folder_to_hash):
             for file in files:
-                self.HashFile(dirpath, file)
+                self.HashFile(dirpath, file, Mode="D")
                 file_counter += 1
                 # print("MD5: {0}".format(self.md5.hexdigest()))
                 # print("SHA1: {0}".format(self.sha1.hexdigest()))
