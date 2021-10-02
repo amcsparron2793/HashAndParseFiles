@@ -84,6 +84,7 @@ class HashDirectory:
                 file_counter += 1
                 # print("MD5: {0}".format(self.md5.hexdigest()))
                 # print("SHA1: {0}".format(self.sha1.hexdigest()))
+                # TODO: if hashchoice == x then only add that hashchoice
                 HashDict.append({"filename": join(dirpath, file).replace('\\', '/'),
                                  "MD5": self.md5.hexdigest(),
                                  "Sha1": self.sha1.hexdigest(),
